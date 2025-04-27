@@ -1,5 +1,5 @@
 CREATE
-DATABASE QuarkusSosial;
+DATABASE QuarkusSocial;
 
 CREATE TABLE users
 (

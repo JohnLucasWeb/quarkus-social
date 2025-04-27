@@ -19,6 +19,7 @@ import java.util.Set;
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+// Controlador de usuários
 public class UserResource {
 
     private final UserRepository repository;
@@ -32,6 +33,7 @@ public class UserResource {
 
     @POST
     @Transactional
+    // Cria um novo usuário com base nos dados recebidos na requisição
     public Response createUser(CreateUserRequest userRequest) {
 
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(userRequest);
@@ -51,6 +53,7 @@ public class UserResource {
     }
 
     @GET
+    // Busca todos os usuários
     public Response getAllUsers() {
         PanacheQuery<User> query = repository.findAll();
         return Response.ok(query.list()).build();
@@ -59,6 +62,7 @@ public class UserResource {
     @DELETE
     @Transactional
     @Path("{id}")
+    // Deleta um usuário
     public Response deleteUser(@PathParam("id") Long id){
         User user = repository.findById(id);
 
@@ -72,6 +76,7 @@ public class UserResource {
     @PUT
     @Transactional
     @Path("{id}")
+    // Atualiza um usuário
     public Response updateUser(@PathParam("id") Long id, CreateUserRequest userRequest){
         User user = repository.findById(id);
 
