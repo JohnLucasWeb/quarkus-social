@@ -2,6 +2,7 @@ package io.github.johnlucasweb.quarkussocial.rest.dto;
 
 import io.github.johnlucasweb.quarkussocial.domain.model.Post;
 import io.github.johnlucasweb.quarkussocial.domain.model.User;
+import io.github.johnlucasweb.quarkussocial.domain.repository.FollowerRepository;
 import io.github.johnlucasweb.quarkussocial.domain.repository.PostRepository;
 import io.github.johnlucasweb.quarkussocial.domain.repository.UserRepository;
 import io.quarkus.panache.common.Sort;
@@ -21,11 +22,15 @@ public class PostResource {
 
     private UserRepository userRepository;
     private PostRepository postRepository;
+    private FollowerRepository followerRepository;
 
     @Inject
-    public PostResource(UserRepository userRepository, PostRepository postRepository) {
+    public PostResource(UserRepository userRepository,
+                        PostRepository postRepository,
+                        FollowerRepository followerRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
+        this.followerRepository = followerRepository;
     }
 
     @POST
@@ -55,10 +60,31 @@ public class PostResource {
 
     @GET
     // Busca todos os posts
-    public Response listPosts(@PathParam("userId") Long userId) {
+    public Response listPosts(
+            @PathParam("userId") Long userId,
+            @HeaderParam("followerId") Long followerId) {
+
+        // Verifica se o usuário existe
         User user = userRepository.findById(userId);
         if(user == null){
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Verifica se o seguidor foi informado
+        if(followerId == null){
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Follower id is required")
+                    .build();
+        }
+
+        User follower = userRepository.findById(followerId);
+
+        // Verifica se o usuário é seguindo o autor
+        boolean follows = followerRepository.follows(follower, user);
+
+        // Se o usuário não seguir o autor, retorna um erro de permissão
+        if(!follows){
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         // Busca todos os posts do usuário, ordenados por data de criação decrescente
